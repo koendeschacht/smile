@@ -3,16 +3,18 @@ name := "smile"
 import com.typesafe.sbt.pgp.PgpKeys.{useGpg, publishSigned, publishLocalSigned}
 
 lazy val commonSettings = Seq(
-  organization := "com.github.haifengl",
+  organization := "com.github.koendeschacht",
   organizationName := "Haifeng Li",
   organizationHomepage := Some(url("http://haifengl.github.io/")),
-  version := "1.5.2",
+  version := "0.0.7",
   javacOptions in (Compile, compile) ++= Seq("-source", "1.8", "-target", "1.8", "-encoding", "UTF8", "-g:lines,vars,source", "-Xlint:unchecked"),
   javacOptions in (Compile, doc) ++= Seq("-Xdoclint:none"),
   javaOptions in test += "-Dsmile.threads=1",
+  resolvers += Resolver.mavenLocal,
   libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.25" % "test",
   libraryDependencies += "junit" % "junit" % "4.12" % "test",
   libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test",
+  libraryDependencies += "coach.stepwise" % "java-utils" % "master-SNAPSHOT",
   scalaVersion := "2.12.6",
   scalacOptions := Seq("-unchecked", "-deprecation", "-feature", "-encoding", "utf8"),
   testOptions in Test := Seq(Tests.Argument(TestFrameworks.JUnit, "-a")),
@@ -56,6 +58,8 @@ lazy val commonSettings = Seq(
 lazy val nonPubishSettings = commonSettings ++ Seq(
   //publishArtifact := false,
   publishLocal := {},
+  publishConfiguration := publishConfiguration.value.withOverwrite(true),
+  publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true),
   publish := {},
   publishSigned := {},
   publishLocalSigned := {}

@@ -15,15 +15,6 @@
  *******************************************************************************/
 package smile.regression;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.concurrent.Callable;
-import java.util.stream.IntStream;
-
 import smile.data.Attribute;
 import smile.data.AttributeDataset;
 import smile.data.NominalAttribute;
@@ -31,6 +22,10 @@ import smile.data.NumericAttribute;
 import smile.math.Math;
 import smile.sort.QuickSort;
 import smile.util.MulticoreExecutor;
+
+import java.io.Serializable;
+import java.util.*;
+import java.util.concurrent.Callable;
 
 /**
  * Decision tree for regression. A decision tree can be learned by
@@ -96,7 +91,7 @@ public class RegressionTree implements Regression<double[]> {
 
     /**
      * Values between [-1, 1] that represents monotonic regression coefficient for each attribute.
-     *
+     * <p>
      * It can be used to enforce model to keep monotonic relationship between target and the attribute.
      * Positive value enforce target to be positively correlated with this feature.
      * Positive value enforce target to be negatively correlated with this feature.
@@ -424,7 +419,10 @@ public class RegressionTree implements Regression<double[]> {
             double sum = node.output * n;
 
             int p = attributes.length;
-            int[] variables = IntStream.range(0, attributes.length).toArray();
+            int[] variables = new int[attributes.length];
+            for (int i = 0; i < attributes.length; i++) {
+                variables[i] = i;
+            }
 
             // Loop through features and compute the reduction of squared error,
             // which is trueCount * trueMean^2 + falseCount * falseMean^2 - count * parentMean^2                    
@@ -633,7 +631,7 @@ public class RegressionTree implements Regression<double[]> {
          * Split the node into two children nodes. Returns true if split success.
          */
         public void split(PriorityQueue<TrainNode> nextSplits) {
-            if(nextSplits == null) {
+            if (nextSplits == null) {
                 throw new IllegalArgumentException("nextSplits cannot be null");
             }
             if (node.splitFeature < 0) {
@@ -933,13 +931,13 @@ public class RegressionTree implements Regression<double[]> {
     /**
      * Constructor. Learns a regression tree for random forest and gradient tree boosting.
      *
-     * @param data       the dataset.
-     * @param maxNodes   the maximum number of leaf nodes in the tree.
-     *                   samples[i] should be 0 or 1 to indicate if the instance is used for training.
+     * @param data     the dataset.
+     * @param maxNodes the maximum number of leaf nodes in the tree.
+     *                 samples[i] should be 0 or 1 to indicate if the instance is used for training.
      */
     public RegressionTree(AttributeDataset data, int maxNodes) {
         this(data.attributes(), data.x(), data.y(), maxNodes);
-    }    
+    }
 
     /**
      * Constructor. Learns a regression tree with (most) given number of leaves.
@@ -956,14 +954,14 @@ public class RegressionTree implements Regression<double[]> {
     /**
      * Constructor. Learns a regression tree for random forest and gradient tree boosting.
      *
-     * @param data       the dataset.
-     * @param maxNodes   the maximum number of leaf nodes in the tree.
-     * @param nodeSize   the number of instances in a node below which the tree will
-     *                   not split, setting nodeSize = 5 generally gives good results.
+     * @param data     the dataset.
+     * @param maxNodes the maximum number of leaf nodes in the tree.
+     * @param nodeSize the number of instances in a node below which the tree will
+     *                 not split, setting nodeSize = 5 generally gives good results.
      */
     public RegressionTree(AttributeDataset data, int maxNodes, int nodeSize) {
         this(data.attributes(), data.x(), data.y(), maxNodes, nodeSize);
-    }    
+    }
 
     /**
      * Constructor. Learns a regression tree for random forest and gradient tree boosting.
@@ -989,17 +987,17 @@ public class RegressionTree implements Regression<double[]> {
     /**
      * Constructor. Learns a regression tree for random forest and gradient tree boosting.
      *
-     * @param data       the dataset.
-     * @param maxNodes   the maximum number of leaf nodes in the tree.
-     * @param nodeSize   the number of instances in a node below which the tree will
-     *                   not split, setting nodeSize = 5 generally gives good results.
-     * @param mtry       the number of input variables to pick to split on at each
-     *                   node. It seems that p/3 give generally good performance, where p
-     *                   is the number of variables.
-     * @param order      the index of training values in ascending order. Note
-     *                   that only numeric attributes need be sorted.
-     * @param samples    the sample set of instances for stochastic learning.
-     *                   samples[i] should be 0 or 1 to indicate if the instance is used for training.
+     * @param data     the dataset.
+     * @param maxNodes the maximum number of leaf nodes in the tree.
+     * @param nodeSize the number of instances in a node below which the tree will
+     *                 not split, setting nodeSize = 5 generally gives good results.
+     * @param mtry     the number of input variables to pick to split on at each
+     *                 node. It seems that p/3 give generally good performance, where p
+     *                 is the number of variables.
+     * @param order    the index of training values in ascending order. Note
+     *                 that only numeric attributes need be sorted.
+     * @param samples  the sample set of instances for stochastic learning.
+     *                 samples[i] should be 0 or 1 to indicate if the instance is used for training.
      */
     public RegressionTree(AttributeDataset data, int maxNodes, int nodeSize, int mtry, int[][] order, int[] samples, NodeOutput output) {
         this(data.attributes(), data.x(), data.y(), maxNodes, nodeSize, mtry, order, samples, output);
@@ -1336,6 +1334,7 @@ public class RegressionTree implements Regression<double[]> {
 
     /**
      * Returs the root node.
+     *
      * @return root node.
      */
     public Node getRoot() {
